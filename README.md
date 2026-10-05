@@ -32,7 +32,11 @@ The page does not deliver files or implement a payment processor. Those services
 
 ## GitHub Pages
 
-Create a new repository named `creatovault-library`, push these files to `main`, then choose **Settings → Pages → Source → GitHub Actions**. The included workflow deploys only the public website assets and excludes the README and business plan.
+Live preview: https://mono444.github.io/creatovault-library/
+
+Repository: https://github.com/Mono444/creatovault-library
+
+Pages source is set to GitHub Actions. Pushes to `main` deploy automatically. The included workflow deploys only the public website assets and excludes the README and business plan.
 
 No compilation is required. All asset links are relative, so GitHub project-site subpaths work without editing a base URL. External Google Fonts are optional; fallback fonts work without that request.
 
@@ -40,4 +44,4 @@ If editing locally, serve this folder with `python3 -m http.server 8000`, then o
 
 ## Validation
 
-JavaScript syntax, local asset references and configuration passed validation. Interactive logic passed isolated DOM checks for initial hydration, category filtering, preview dialogs, focus restoration, policy dialogs, disabled draft checkout and HTTPS-only live links. Desktop/mobile visual inspection in a real browser is still pending. A publication has not occurred unless a successful deployment and public URL are explicitly reported.
+JavaScript syntax, local asset references and configuration passed validation. Interactive logic passed isolated DOM checks for initial hydration, category filtering, preview dialogs, focus restoration, policy dialogs, disabled draft checkout and HTTPS-only live links. The GitHub Pages deployment succeeded. The live desktop page, original image, category filtering, resource preview and privacy dialogs, and disabled checkout notice were verified in a browser. No horizontal overflow was observed at the checked desktop width. Responsive CSS is included; a separate mobile browser visual inspection has not been completed.
