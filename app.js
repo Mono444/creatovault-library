@@ -1,0 +1,52 @@
+'use strict';
+(() => {
+  const c=window.SITE_CONFIG;
+  const $=(s)=>document.querySelector(s);
+  const esc=(s)=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const money=(amount,currency)=>new Intl.NumberFormat(currency==='INR'?'en-IN':'en-US',{style:'currency',currency,maximumFractionDigits:0}).format(amount);
+  const usd=money(c.price.international,c.price.internationalCurrency);
+  document.documentElement.style.setProperty('--blue',c.palette.primary);
+  document.documentElement.style.setProperty('--navy',c.palette.navy);
+  document.title=`${c.brand} — ${c.productName}`;
+  document.querySelectorAll('[data-brand]').forEach(el=>{el.textContent=c.brand.toLowerCase()+'.'});
+  document.querySelectorAll('[data-price]').forEach(el=>el.textContent=usd);
+  document.querySelectorAll('[data-product]').forEach(el=>el.textContent=c.productName);
+  $('#announcement').textContent=c.announcement;
+  $('#hero-title').innerHTML=c.heroTitle;
+  $('#hero-copy').textContent=c.heroCopy;
+  $('#year').textContent=new Date().getFullYear();
+  $('#stats').innerHTML=c.stats.map(s=>`<div class="stat"><strong>${esc(s.value)}</strong><span>${esc(s.label)}</span></div>`).join('');
+  const feature=(x)=>`<article class="feature-card"><div class="line-icon" aria-hidden="true">${esc(x.icon)}</div><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></article>`;
+  $('#problems').innerHTML=c.problems.map(feature).join('');
+  $('#features').innerHTML=c.features.map(feature).join('');
+  $('#personas').innerHTML=c.personas.map(feature).join('');
+  $('#niche-list').innerHTML=c.niches.map(n=>`<details><summary>${esc(n.name)}</summary><p>${esc(n.text)}</p></details>`).join('');
+  $('#uses').innerHTML=c.uses.map(x=>`<article class="feature-card"><div class="use-number">${esc(x.number)}</div><span class="use-label">${esc(x.label)}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></article>`).join('');
+  $('#counted').innerHTML=['Layouts','Workbooks','Checklists','Examples'].map((v,i)=>`<div class="counted-item"><strong>${esc(v)}</strong>${['Adapt the structure','Make a clear decision','Review the details','See a practical direction'][i]}</div>`).join('');
+  $('#offer-list').innerHTML=c.offerItems.map(v=>`<div class="offer-row"><span aria-hidden="true">✓</span><span>${esc(v)}</span></div>`).join('');
+  $('#steps').innerHTML=c.steps.map(s=>`<article class="step"><span class="step-number">${esc(s.number)}</span><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></article>`).join('');
+  $('#faqs').innerHTML=c.faqs.map(f=>`<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
+  $('#covers').innerHTML=c.resources.slice(0,4).map(r=>`<div class="mini-cover"><small>${esc(c.brand.toUpperCase())}<br>COLLECTION PREVIEW</small><h3>${esc(r.title)}</h3><small>${esc(r.tag)} / ${esc(r.number)}</small></div>`).join('');
+  const cats=['All',...new Set(c.resources.map(r=>r.category))];
+  $('#filters').innerHTML=cats.map((cat,i)=>`<button class="filter" data-category="${esc(cat)}" aria-pressed="${i===0}">${esc(cat)}</button>`).join('');
+  const draw=(cat)=>{
+    $('#previews').innerHTML=c.resources.map((r,i)=>({r,i})).filter(({r})=>cat==='All'||r.category===cat).map(({r,i})=>`<button class="resource-card" data-resource="${i}" aria-label="Preview ${esc(r.title)}"><div class="resource-art ${esc(r.tone)}"><div class="cover-brand"><span>${esc(c.brand.toUpperCase())}</span><span>${esc(r.number)}</span></div><h3>${esc(r.title)}</h3><div class="cover-tag">${esc(r.tag)}</div></div><div class="resource-meta"><span>${esc(r.format)}</span><strong>View preview</strong></div></button>`).join('');
+  };
+  draw('All');
+  $('#filters').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(!b)return;$('#filters').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw(b.dataset.category)});
+  const dialog=$('#detail-dialog');
+  let returnFocus=null;
+  const open=(heading,body,kicker='RESOURCE PREVIEW')=>{returnFocus=document.activeElement;$('#dialog-kicker').textContent=kicker;$('#dialog-body').innerHTML=`<h2 id="dialog-title">${esc(heading)}</h2>${body}`;dialog.showModal();};
+  $('.close-button').addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()});
+  dialog.addEventListener('close',()=>{if(returnFocus&&returnFocus.isConnected)returnFocus.focus()});
+  $('#previews').addEventListener('click',e=>{const card=e.target.closest('[data-resource]');if(!card)return;const r=c.resources[Number(card.dataset.resource)];open(r.title,`<p>${esc(r.description)}</p><ul class="check-list">${r.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul><p class="dialog-disclaimer">This is a preview concept. Final files, software compatibility and contents will be confirmed before launch.</p>`)});
+  const safeUrl=(url)=>{try{const u=new URL(url);return u.protocol==='https:'?u.href:null}catch{return null}};
+  const checkout=()=>{
+    const options=[['India',money(c.price.india,c.price.indiaCurrency),c.checkout.indiaUrl],['International',usd,c.checkout.internationalUrl]];
+    open(c.checkout.enabled?'Choose your checkout':'The collection is coming soon',`<p>${c.checkout.enabled?'Choose the purchase option for your region. Review the final product details and policies before completing your order.':'Explore the proposed launch prices below. Purchases open once the final resources and terms are ready.'}</p><div class="purchase-options">${options.map(([name,price,url])=>`<div class="purchase-option"><span>${esc(name)}</span><strong>${esc(price)}</strong>${c.checkout.enabled&&safeUrl(url)?`<a class="button" href="${esc(safeUrl(url))}" rel="noopener noreferrer">Continue to checkout</a>`:`<button class="button" disabled>Coming soon</button>`}</div>`).join('')}</div><p class="dialog-disclaimer">${c.checkout.enabled?'Payment and delivery are handled by the selected checkout provider.':'No payment is collected in this preview. Final contents and prices may change before launch.'}</p>`,'THE OFFER');
+  };
+  document.querySelectorAll('[data-checkout]').forEach(b=>b.addEventListener('click',checkout));
+  document.querySelectorAll('[data-policy]').forEach(b=>b.addEventListener('click',()=>open({privacy:'Privacy',terms:'Terms',refund:'Refunds'}[b.dataset.policy],`<p>${esc(c.policies[b.dataset.policy])}</p>`,'PRODUCT PREVIEW')));
+  if(c.promo.enabled&&c.promo.code){$('#announcement').innerHTML=`${esc(c.promo.message)} <button id="copy-code">${esc(c.promo.code)}</button>`;$('#copy-code').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(c.promo.code);const t=$('#toast');t.textContent='Code copied';t.classList.add('visible');setTimeout(()=>t.classList.remove('visible'),2200)}catch{open('Discount code',`<p>Copy this code at checkout: <strong>${esc(c.promo.code)}</strong></p>`,'OFFER')}})}
+})();
